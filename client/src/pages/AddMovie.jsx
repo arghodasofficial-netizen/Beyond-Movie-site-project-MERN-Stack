@@ -19,10 +19,15 @@ const AddMovie = () => {
     const [genre, setGenre] = useState('Action');
     const [date, setDate] = useState('');
     const [isFeatured, setIsFeatured] = useState(false);
+    
+    // ছবি ফাইল হিসেবেই থাকবে
     const [thumbnail, setThumbnail] = useState(null);
-    const [singleVideo, setSingleVideo] = useState(null);
+    
+    // ভিডিও এখন লিঙ্ক (Link) হিসেবে থাকবে
+    const [videoLink, setVideoLink] = useState(''); 
+    
     const [episodes, setEpisodes] = useState([
-        { title: '', episodeNumber: 1, season: 1, file: null }
+        { title: '', episodeNumber: 1, season: 1, videoUrl: '' }
     ]);
 
     
@@ -51,16 +56,13 @@ const AddMovie = () => {
         }
     };
 
-   
     const handleDelete = async (id) => {
-        
         const confirmDelete = window.confirm("Are you sure you want to DELETE this content permanently?");
-        
         if (confirmDelete) {
             try {
                 await axios.delete(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/${id}`);
                 alert("🗑️ Content Deleted Successfully!");
-                setRefreshTrigger(prev => !prev); // লিস্ট রিফ্রেশ করবে
+                setRefreshTrigger(prev => !prev); 
             } catch (error) {
                 console.error(error);
                 alert("Failed to delete content.");
@@ -68,9 +70,8 @@ const AddMovie = () => {
         }
     };
 
-   
     const addEpisodeField = () => {
-        setEpisodes([...episodes, { title: '', episodeNumber: episodes.length + 1, season: 1, file: null }]);
+        setEpisodes([...episodes, { title: '', episodeNumber: episodes.length + 1, season: 1, videoUrl: '' }]);
     };
 
     const handleEpisodeChange = (index, field, value) => {
@@ -90,18 +91,20 @@ const AddMovie = () => {
         formData.append('genre', genre);
         formData.append('releaseDate', date);
         formData.append('isFeatured', isFeatured);
+        
+        // থাম্বনেইল ফাইল হিসেবে যাবে
         formData.append('thumbnail', thumbnail);
 
         if (activeTab === 'movie') {
-            formData.append('video', singleVideo);
+            // ভিডিওর লিঙ্ক টেক্সট হিসেবে যাবে
+            formData.append('videoUrl', videoLink);
         } else {
-            episodes.forEach((ep) => {
-                if(ep.file) formData.append('seriesVideos', ep.file);
-            });
+            // সিরিজ হলে পুরো এপিসোড ডেটা (লিঙ্কসহ) JSON হিসেবে যাবে
             const episodeInfo = episodes.map(ep => ({
                 title: ep.title,
                 episodeNumber: ep.episodeNumber,
-                season: ep.season
+                season: ep.season,
+                videoUrl: ep.videoUrl // ফাইলের বদলে লিঙ্ক
             }));
             formData.append('episodeData', JSON.stringify(episodeInfo));
         }
@@ -110,7 +113,7 @@ const AddMovie = () => {
             await axios.post('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            alert('✅ Upload Successful!');
+            alert('✅ Upload Successful! Movie Added via Link.');
             setRefreshTrigger(prev => !prev);
             navigate('/'); 
         } catch (error) {
@@ -127,9 +130,8 @@ const AddMovie = () => {
     return (
         <div className="admin-page-wrapper">
             
-            
             <div className="upload-container">
-                <h2 className="form-header">Upload New Content</h2>
+                <h2 className="form-header">Upload New Content (Link System)</h2>
                 
                 <div className="type-tabs">
                     <button className={`tab-btn ${activeTab === 'movie' ? 'active' : ''}`} onClick={() => setActiveTab('movie')}>
@@ -153,7 +155,7 @@ const AddMovie = () => {
                     </div>
 
                     <div className="file-input-wrapper">
-                        <label style={{display:'block', marginBottom:'5px', color:'#aaa'}}>Thumbnail Image</label>
+                        <label style={{display:'block', marginBottom:'5px', color:'#aaa'}}>Thumbnail Image (Upload File)</label>
                         <input type="file" onChange={e => setThumbnail(e.target.files[0])} required />
                     </div>
 
@@ -164,23 +166,39 @@ const AddMovie = () => {
                         </label>
                     </div>
 
+                    {/* Movie Link Input */}
                     {activeTab === 'movie' && (
-                        <div className="file-input-wrapper" style={{borderColor: '#e50914'}}>
-                            <label style={{color:'#e50914', fontWeight:'bold'}}>Video File</label>
-                            <input type="file" onChange={e => setSingleVideo(e.target.files[0])} required />
+                        <div className="file-input-wrapper" style={{borderColor: '#e50914', borderStyle: 'dashed'}}>
+                            <label style={{color:'#e50914', fontWeight:'bold', display: 'block', marginBottom: '8px'}}>Paste Movie Link (YouTube/Drive)</label>
+                            <input 
+                                className="modern-input" 
+                                type="text" 
+                                placeholder="https://youtu.be/..." 
+                                onChange={e => setVideoLink(e.target.value)} 
+                                required 
+                            />
                         </div>
                     )}
 
+                    {/* Series Link Inputs */}
                     {activeTab === 'series' && (
                         <div>
                             {episodes.map((ep, index) => (
                                 <div key={index} className="episode-card">
                                     <h4 style={{margin:'0 0 10px 0', color:'#e50914'}}>Ep {index + 1}</h4>
-                                    <div style={{display:'flex', gap:'10px'}}>
+                                    <div style={{display:'flex', gap:'10px', marginBottom: '10px'}}>
                                         <input className="modern-input" placeholder="Title" value={ep.title} onChange={e => handleEpisodeChange(index, 'title', e.target.value)} />
                                         <input className="modern-input" type="number" placeholder="No." value={ep.episodeNumber} onChange={e => handleEpisodeChange(index, 'episodeNumber', e.target.value)} style={{width:'80px'}} />
                                     </div>
-                                    <input type="file" onChange={e => handleEpisodeChange(index, 'file', e.target.files[0])} required />
+                                    {/* Video Link Field for Episode */}
+                                    <input 
+                                        className="modern-input" 
+                                        type="text" 
+                                        placeholder="Paste Episode Link Here" 
+                                        value={ep.videoUrl} 
+                                        onChange={e => handleEpisodeChange(index, 'videoUrl', e.target.value)} 
+                                        required 
+                                    />
                                 </div>
                             ))}
                             <button type="button" onClick={addEpisodeField} className="add-ep-btn">+ Add Episode</button>
@@ -188,16 +206,14 @@ const AddMovie = () => {
                     )}
 
                     <button type="submit" className="upload-btn" disabled={uploading}>
-                        {uploading ? 'Uploading...' : '🚀 Publish Now'}
+                        {uploading ? 'Processing...' : '🚀 Publish Now'}
                     </button>
                 </form>
             </div>
 
-            
+            {/* Manage List (Existing Code) */}
             <div className="manage-container">
                 <h2 className="form-header" style={{marginTop: '50px'}}>Manage Content</h2>
-
-                
                 <h3 className="section-title">🎬 Movies List</h3>
                 <div className="content-list">
                     {movieList.map(item => (
@@ -207,30 +223,19 @@ const AddMovie = () => {
                                 <h4>{item.title}</h4>
                                 <span>{new Date(item.releaseDate).getFullYear()} • {item.genre}</span>
                             </div>
-                            
                             <div className="action-buttons">
-                        
                                 <label className="featured-toggle">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={item.isFeatured} 
-                                        onChange={() => toggleFeatured(item._id, item.isFeatured)} 
-                                    />
+                                    <input type="checkbox" checked={item.isFeatured} onChange={() => toggleFeatured(item._id, item.isFeatured)} />
                                     <span className="slider round"></span>
-                                    <span className="label-text">{item.isFeatured ? '🔥 Featured' : 'Normal'}</span>
+                                    <span className="label-text">{item.isFeatured ? '🔥' : 'Normal'}</span>
                                 </label>
-
-                          
-                                <button onClick={() => handleDelete(item._id)} className="delete-btn" title="Delete Movie">
-                                    🗑️
-                                </button>
+                                <button onClick={() => handleDelete(item._id)} className="delete-btn">🗑️</button>
                             </div>
                         </div>
                     ))}
                     {movieList.length === 0 && <p style={{color:'#666'}}>No movies found.</p>}
                 </div>
 
-               
                 <h3 className="section-title" style={{marginTop: '30px', color: '#7d2ae8'}}>📺 Web Series List</h3>
                 <div className="content-list">
                     {seriesList.map(item => (
@@ -240,22 +245,13 @@ const AddMovie = () => {
                                 <h4>{item.title}</h4>
                                 <span>{item.episodes?.length || 0} Episodes • {item.genre}</span>
                             </div>
-                            
                             <div className="action-buttons">
                                 <label className="featured-toggle">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={item.isFeatured} 
-                                        onChange={() => toggleFeatured(item._id, item.isFeatured)} 
-                                    />
+                                    <input type="checkbox" checked={item.isFeatured} onChange={() => toggleFeatured(item._id, item.isFeatured)} />
                                     <span className="slider round"></span>
-                                    <span className="label-text">{item.isFeatured ? '🔥 Featured' : 'Normal'}</span>
+                                    <span className="label-text">{item.isFeatured ? '🔥' : 'Normal'}</span>
                                 </label>
-
-                        
-                                <button onClick={() => handleDelete(item._id)} className="delete-btn" title="Delete Series">
-                                    🗑️
-                                </button>
+                                <button onClick={() => handleDelete(item._id)} className="delete-btn">🗑️</button>
                             </div>
                         </div>
                     ))}
