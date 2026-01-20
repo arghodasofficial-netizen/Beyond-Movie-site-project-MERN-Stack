@@ -6,8 +6,9 @@ const episodeSchema = new mongoose.Schema({
     title: { type: String },         
     episodeNumber: { type: Number }, 
     season: { type: Number, default: 1 }, 
-    videoUrl: { type: String }       
+    videoUrl: { type: String } 
 });
+
 
 const reviewSchema = new mongoose.Schema({
     user: { type: String, required: true },
@@ -16,21 +17,24 @@ const reviewSchema = new mongoose.Schema({
     date: { type: Date, default: Date.now }
 });
 
+
 const movieSchema = new mongoose.Schema({
     title: { type: String, required: true, trim: true },
-    description: { type: String, required: true },
-    releaseDate: { type: Date, required: true },
-    genre: { type: String, required: true },
+    description: { type: String }, 
+    releaseDate: { type: Date },   
+    genre: { type: String },
+    
+ 
     thumbnailUrl: { type: String, required: true },
     
-  
+ 
     type: { 
         type: String, 
         enum: ['movie', 'series'], 
         default: 'movie' 
     },
 
-   
+  
     videoUrl: { type: String }, 
 
    
