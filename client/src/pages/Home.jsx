@@ -12,6 +12,7 @@ const Home = () => {
     useEffect(() => {
         const fetchMovies = async () => {
             try {
+                // আপনার সার্ভার থেকে মুভি লিস্ট আনছি
                 const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 setMovies(res.data);
             } catch (error) {
@@ -25,15 +26,14 @@ const Home = () => {
     const getFilteredMovies = () => {
         let filtered = movies;
         
-        
-        
+        // শুধু মুভিগুলো ফিল্টার করা হচ্ছে (সিরিজ বাদে)
+        // অথবা আপনি চাইলে সব রাখতে পারেন, তবে সাধারণত 'Latest Updates' এ মিক্স থাকে
         if (activeTab !== 'All') {
             filtered = movies.filter(m => 
                 m.genre && m.genre.toLowerCase().trim() === activeTab.toLowerCase().trim()
             );
         }
         
-    
         return filtered.slice(0, 12);
     };
 
@@ -54,13 +54,13 @@ const Home = () => {
 
             <div style={{ padding: '0 40px', marginTop: '40px' }}>
                 
-              
+                {/* --- LATEST UPDATES HEADER --- */}
                 <div className="section-header">
                     <h2 style={{ margin: 0, color: 'white', fontSize: '22px', borderLeft:'4px solid #e50914', paddingLeft:'10px' }}>
                         Latest Updates
                     </h2>
                     
-                   
+                    {/* Filter Tabs */}
                     <div className="filter-tabs">
                         {['All', 'Thriller', 'Horror', 'Comedy', 'Action'].map(cat => (
                             <button 
@@ -78,13 +78,20 @@ const Home = () => {
                     </Link>
                 </div>
 
-       
+                {/* --- MOVIE GRID --- */}
                 <div className="movie-grid">
                     {getFilteredMovies().map((item) => (
-                        <Link to={`/movie/${item._id}`} key={item._id} className="movie-card">
-                            <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${item.thumbnailUrl}`} alt={item.title} className="poster-img"/>
+                        // 👇 Link পরিবর্তন করে /player/ করা হয়েছে যাতে প্লেয়ার ওপেন হয়
+                        <Link to={`/player/${item._id}`} key={item._id} className="movie-card">
                             
-                        
+                            {/* 👇 পরিবর্তন: এখানে সার্ভার লিঙ্ক বাদ দেওয়া হয়েছে, সরাসরি item.thumbnailUrl */}
+                            <img 
+                                src={item.thumbnailUrl} 
+                                alt={item.title} 
+                                className="poster-img"
+                                onError={(e) => {e.target.src = "https://via.placeholder.com/300x450?text=No+Image"}} // ছবি না থাকলে ব্যাকআপ
+                            />
+                            
                             <div className="card-badges">
                                 <div className="badge-group-left">
                                     <span className="badge badge-hd">{item.type === 'series' ? 'WEB' : 'HD'}</span>
@@ -110,7 +117,7 @@ const Home = () => {
                 </div>
 
 
-              
+                {/* --- POPULAR WEB SERIES SECTION --- */}
                 {webSeries.length > 0 && (
                     <div style={{ marginTop: '50px' }}>
                         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
@@ -124,8 +131,14 @@ const Home = () => {
                         
                         <div className="movie-grid">
                             {webSeries.map((item) => (
-                                <Link to={`/movie/${item._id}`} key={item._id} className="movie-card">
-                                    <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${item.thumbnailUrl}`} alt={item.title} className="poster-img"/>
+                                <Link to={`/player/${item._id}`} key={item._id} className="movie-card">
+                                    {/* 👇 পরিবর্তন: এখানেও ডাইরেক্ট লিঙ্ক */}
+                                    <img 
+                                        src={item.thumbnailUrl} 
+                                        alt={item.title} 
+                                        className="poster-img"
+                                        onError={(e) => {e.target.src = "https://via.placeholder.com/300x450?text=No+Image"}}
+                                    />
                                     <div className="card-badges">
                                         <div className="badge-group-left">
                                             <span className="badge badge-hd" style={{background:'#e50914'}}>EPISODES</span>
