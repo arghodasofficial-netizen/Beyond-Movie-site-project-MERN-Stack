@@ -17,7 +17,7 @@ const FilterPage = () => {
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/movies');
+                const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 let allMovies = res.data;
                 let filteredMovies = [];
 
@@ -81,7 +81,7 @@ const FilterPage = () => {
                         style={{ textDecoration: 'none' }}
                     >
                         <img 
-                            src={`http://localhost:5000/uploads/${movie.thumbnailUrl}`} 
+                            src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`} 
                             alt={movie.title} 
                             className="poster-img"
                         />

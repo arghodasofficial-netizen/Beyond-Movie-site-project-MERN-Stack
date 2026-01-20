@@ -23,7 +23,7 @@ const MoviePlayer = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5000/api/movies/${id}`);
+                const { data } = await axios.get(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/${id}`);
                 setMovie(data);
                 
                
@@ -38,7 +38,7 @@ const MoviePlayer = () => {
                 setNewFeatured(data.isFeatured);
 
                 
-                const allRes = await axios.get('http://localhost:5000/api/movies');
+                const allRes = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 const suggestions = allRes.data.filter(m => 
                     m.genre === data.genre && m._id !== data._id
                 );
@@ -62,7 +62,7 @@ const MoviePlayer = () => {
     const handleUpdate = async () => {
         try {
             
-            await axios.put(`http://localhost:5000/api/movies/feature/${id}`, {
+            await axios.put(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/feature/${id}`, {
                 isFeatured: newFeatured
             });
             alert('Updated Successfully!');
@@ -76,7 +76,7 @@ const MoviePlayer = () => {
     const submitReview = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`http://localhost:5000/api/movies/${id}/reviews`, {
+            await axios.post(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/${id}/reviews`, {
                 user: reviewUser,
                 rating: reviewRating,
                 comment: reviewComment
@@ -100,8 +100,8 @@ const MoviePlayer = () => {
                         key={currentVideo} 
                         controls 
                         className="main-video"
-                        src={`http://localhost:5000/uploads/${currentVideo}`}
-                        poster={`http://localhost:5000/uploads/${movie.thumbnailUrl}`}
+                        src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${currentVideo}`}
+                        poster={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`}
                     >
                         Your browser does not support the video tag.
                     </video>
@@ -190,7 +190,7 @@ const MoviePlayer = () => {
                 <div className="suggestion-list">
                     {relatedMovies.map(rel => (
                         <Link to={`/movie/${rel._id}`} key={rel._id} className="suggestion-card">
-                            <img src={`http://localhost:5000/uploads/${rel.thumbnailUrl}`} alt="" />
+                            <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${rel.thumbnailUrl}`} alt="" />
                             <div className="sug-info">
                                 <h4>{rel.title}</h4>
                                 <span>{new Date(rel.releaseDate).getFullYear()}</span>

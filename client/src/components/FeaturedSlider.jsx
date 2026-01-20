@@ -44,7 +44,7 @@ const FeaturedSlider = ({ movies }) => {
           <SwiperSlide key={movie._id} style={{ width: '300px', height: '400px' }}>
             <div className="slider-card">
               <img 
-                src={`http://localhost:5000/uploads/${movie.thumbnailUrl}`} 
+                src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`} 
                 alt={movie.title} 
                 style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
               />

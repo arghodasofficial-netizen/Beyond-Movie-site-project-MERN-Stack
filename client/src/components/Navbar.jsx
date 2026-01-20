@@ -16,7 +16,7 @@ const Navbar = () => {
     useEffect(() => {
         const fetchYears = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/movies/years');
+                const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/years');
                 setReleaseYears(res.data);
             } catch (error) {
                 console.error("Error fetching years:", error);
@@ -30,7 +30,7 @@ const Navbar = () => {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.length > 1) {
                 try {
-                    const res = await axios.get(`http://localhost:5000/api/search?q=${searchTerm}`);
+                    const res = await axios.get(`https://beyond-movie-site-project-mern-stack.onrender.com/api/search?q=${searchTerm}`);
                     setSuggestions(res.data);
                 } catch (error) {
                     console.error(error);
@@ -121,7 +121,7 @@ const Navbar = () => {
                                 
                                 onClick={() => handleSuggestionClick(movie._id)} 
                             >
-                                <img src={`http://localhost:5000/uploads/${movie.thumbnailUrl}`} alt="" />
+                                <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`} alt="" />
                                 <div className="suggestion-info">
                                     <h4>{movie.title}</h4>
                                     <span>{new Date(movie.releaseDate).getFullYear()} • {movie.genre}</span>

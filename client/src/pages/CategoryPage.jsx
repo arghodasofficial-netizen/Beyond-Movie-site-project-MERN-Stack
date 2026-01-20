@@ -11,7 +11,7 @@ const CategoryPage = () => {
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/movies');
+                const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 let allMovies = res.data;
 
                
@@ -39,7 +39,7 @@ const CategoryPage = () => {
                 {movies.map((movie) => (
                     <div key={movie._id} className="movie-card">
                         <img 
-                            src={`http://localhost:5000/uploads/${movie.thumbnailUrl}`} 
+                            src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`} 
                             alt={movie.title} 
                             className="poster-img"
                         />

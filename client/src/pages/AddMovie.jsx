@@ -29,7 +29,7 @@ const AddMovie = () => {
     useEffect(() => {
         const fetchContent = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/movies');
+                const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 setContentList(res.data);
             } catch (error) {
                 console.error("Error fetching content:", error);
@@ -41,7 +41,7 @@ const AddMovie = () => {
     
     const toggleFeatured = async (id, currentStatus) => {
         try {
-            await axios.put(`http://localhost:5000/api/movies/feature/${id}`, {
+            await axios.put(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/feature/${id}`, {
                 isFeatured: !currentStatus
             });
             setRefreshTrigger(prev => !prev);
@@ -58,7 +58,7 @@ const AddMovie = () => {
         
         if (confirmDelete) {
             try {
-                await axios.delete(`http://localhost:5000/api/movies/${id}`);
+                await axios.delete(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/${id}`);
                 alert("🗑️ Content Deleted Successfully!");
                 setRefreshTrigger(prev => !prev); // লিস্ট রিফ্রেশ করবে
             } catch (error) {
@@ -107,7 +107,7 @@ const AddMovie = () => {
         }
 
         try {
-            await axios.post('http://localhost:5000/api/movies', formData, {
+            await axios.post('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             alert('✅ Upload Successful!');
@@ -202,7 +202,7 @@ const AddMovie = () => {
                 <div className="content-list">
                     {movieList.map(item => (
                         <div key={item._id} className="content-item">
-                            <img src={`http://localhost:5000/uploads/${item.thumbnailUrl}`} alt="" className="item-thumb"/>
+                            <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${item.thumbnailUrl}`} alt="" className="item-thumb"/>
                             <div className="item-info">
                                 <h4>{item.title}</h4>
                                 <span>{new Date(item.releaseDate).getFullYear()} • {item.genre}</span>
@@ -235,7 +235,7 @@ const AddMovie = () => {
                 <div className="content-list">
                     {seriesList.map(item => (
                         <div key={item._id} className="content-item" style={{borderColor: '#7d2ae8'}}>
-                            <img src={`http://localhost:5000/uploads/${item.thumbnailUrl}`} alt="" className="item-thumb"/>
+                            <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${item.thumbnailUrl}`} alt="" className="item-thumb"/>
                             <div className="item-info">
                                 <h4>{item.title}</h4>
                                 <span>{item.episodes?.length || 0} Episodes • {item.genre}</span>

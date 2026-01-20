@@ -12,7 +12,7 @@ const Home = () => {
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/movies');
+                const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 setMovies(res.data);
             } catch (error) {
                 console.error("Error fetching movies:", error);
@@ -82,7 +82,7 @@ const Home = () => {
                 <div className="movie-grid">
                     {getFilteredMovies().map((item) => (
                         <Link to={`/movie/${item._id}`} key={item._id} className="movie-card">
-                            <img src={`http://localhost:5000/uploads/${item.thumbnailUrl}`} alt={item.title} className="poster-img"/>
+                            <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${item.thumbnailUrl}`} alt={item.title} className="poster-img"/>
                             
                         
                             <div className="card-badges">
@@ -125,7 +125,7 @@ const Home = () => {
                         <div className="movie-grid">
                             {webSeries.map((item) => (
                                 <Link to={`/movie/${item._id}`} key={item._id} className="movie-card">
-                                    <img src={`http://localhost:5000/uploads/${item.thumbnailUrl}`} alt={item.title} className="poster-img"/>
+                                    <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${item.thumbnailUrl}`} alt={item.title} className="poster-img"/>
                                     <div className="card-badges">
                                         <div className="badge-group-left">
                                             <span className="badge badge-hd" style={{background:'#e50914'}}>EPISODES</span>
