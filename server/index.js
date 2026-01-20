@@ -1,11 +1,8 @@
+// server/index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-
-const Movie = require('./models/Movie');
+const Movie = require('./models/Movie'); // আপনার মডেল ফাইল
 
 const app = express();
 const PORT = 5000;
@@ -18,42 +15,29 @@ app.use(cors({
     ],
     credentials: true
 }));
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
-
-// Upload Folder Check
-const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)){
-    fs.mkdirSync(uploadDir);
-}
+app.use(express.json()); // JSON ডেটা রিসিভ করার জন্য
 
 // MongoDB Connection
 mongoose.connect('mongodb+srv://arghodasofficial_db_user:movie1234@cluster0.hifdn5l.mongodb.net/bangla-plex?appName=Cluster0')
 .then(() => console.log('✅ MongoDB Connected (Online)'))
 .catch(err => console.error('❌ MongoDB Error:', err));
 
-// Multer Config (Only for Thumbnails now)
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
-const upload = multer({ storage: storage });
 
 // ---------------------------------------------------------
-//  UPLOAD API (MODIFIED FOR LINK SYSTEM)
+//  API ROUTES (LINK SYSTEM ONLY)
 // ---------------------------------------------------------
-app.post('/api/movies', upload.single('thumbnail'), async (req, res) => {
+
+// 1. Upload Movie/Series (POST)
+app.post('/api/movies', async (req, res) => {
     try {
-        // এখন আমরা ভিডিও ফাইল নেব না, ভিডিওর লিঙ্ক (videoUrl) নেব
-        const { title, description, releaseDate, genre, isFeatured, type, episodeData, videoUrl } = req.body;
+        const { 
+            title, description, releaseDate, genre, 
+            isFeatured, type, episodeData, 
+            videoUrl, thumbnailUrl // এখন থাম্বনেইলও লিঙ্ক হিসেবে আসবে
+        } = req.body;
         
-        // শুধু ছবি (Thumbnail) আপলোড হবে
-        if (!req.file) {
-            return res.status(400).json({ error: "Thumbnail is required!" });
+        if (!thumbnailUrl) {
+            return res.status(400).json({ error: "Thumbnail Link is required!" });
         }
 
         let movieData = {
@@ -62,16 +46,15 @@ app.post('/api/movies', upload.single('thumbnail'), async (req, res) => {
             releaseDate,
             genre,
             type: type || 'movie', 
-            isFeatured: isFeatured === 'true',
-            thumbnailUrl: req.file.filename, // ছবির নাম সেভ হবে
-            videoUrl: videoUrl || '' // ভিডিওর লিঙ্ক সেভ হবে (ফাইল না)
+            isFeatured: isFeatured, // true/false সরাসরি আসবে
+            thumbnailUrl: thumbnailUrl, // Link save hobe
+            videoUrl: videoUrl || ''
         };
 
-        // Series এর জন্য লজিক
+        // Series Logic
         if (type === 'series' && episodeData) {
-            const episodesInfo = JSON.parse(episodeData); 
-            // এপিসোডের ভেতরেও এখন ভিডিওর লিঙ্ক থাকবে
-            movieData.episodes = episodesInfo;
+            // episodeData এখন সরাসরি JSON অ্যারে হিসেবে আসবে ফ্রন্টএন্ড থেকে
+            movieData.episodes = episodeData;
         }
 
         const newMovie = new Movie(movieData);
@@ -83,17 +66,18 @@ app.post('/api/movies', upload.single('thumbnail'), async (req, res) => {
         res.status(500).json({ error: "Server Error" });
     }
 });
-// ---------------------------------------------------------
 
+// 2. Get All Movies (GET)
 app.get('/api/movies', async (req, res) => {
     try {
-        const movies = await Movie.find().sort({ uploadDate: -1 });
+        const movies = await Movie.find().sort({ _id: -1 }); // নতুন গুলো আগে দেখাবে
         res.json(movies);
     } catch (error) {
         res.status(500).json({ error: "Server Error" });
     }
 });
 
+// 3. Search (GET)
 app.get('/api/search', async (req, res) => {
     try {
         const { q } = req.query;
@@ -107,6 +91,7 @@ app.get('/api/search', async (req, res) => {
     }
 });
 
+// 4. Get Single Movie (GET)
 app.get('/api/movies/:id', async (req, res) => {
     try {
         const movie = await Movie.findById(req.params.id);
@@ -117,17 +102,29 @@ app.get('/api/movies/:id', async (req, res) => {
     }
 });
 
+// 5. Delete Movie (DELETE)
 app.delete('/api/movies/:id', async (req, res) => {
     try {
         await Movie.findByIdAndDelete(req.params.id);
-        res.json({ message: "Movie deleted successfully!" });
+        res.json({ message: "Deleted successfully!" });
+    } catch (error) {
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
+// 6. Toggle Feature (PUT)
+app.put('/api/movies/feature/:id', async (req, res) => {
+    try {
+        const { isFeatured } = req.body; 
+        await Movie.findByIdAndUpdate(req.params.id, { isFeatured });
+        res.json({ message: "Status Updated!" });
     } catch (error) {
         res.status(500).json({ error: "Server Error" });
     }
 });
 
 app.get('/', (req, res) => {
-    res.send('Server is Running with Link System!');
+    res.send('Server Running (Full Link System) 🚀');
 });
 
 app.listen(PORT, () => {
