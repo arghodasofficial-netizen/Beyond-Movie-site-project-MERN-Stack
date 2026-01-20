@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
+import ReactPlayer from 'react-player'; // 👈 ভিডিও চালানোর জন্য নতুন প্লেয়ার
 import '../App.css';
 
 const MoviePlayer = () => {
@@ -9,35 +10,32 @@ const MoviePlayer = () => {
     const [movie, setMovie] = useState(null);
     const [relatedMovies, setRelatedMovies] = useState([]);
     
-
     const [currentVideo, setCurrentVideo] = useState(null);
     const [activeEpIndex, setActiveEpIndex] = useState(0);
-
 
     const [newFeatured, setNewFeatured] = useState(false);
     const [reviewUser, setReviewUser] = useState('');
     const [reviewComment, setReviewComment] = useState('');
     const [reviewRating, setReviewRating] = useState(5);
 
-
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // ১. নির্দিষ্ট মুভি লোড করা
                 const { data } = await axios.get(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/${id}`);
                 setMovie(data);
                 
-               
-                if (data.type === 'series' && data.episodes.length > 0) {
-                    setCurrentVideo(data.episodes[0].videoUrl); // সিরিজের প্রথম এপিসোড
+                // ভিডিও সেটআপ (সিরিজ হলে ১ম এপিসোড, মুভি হলে ডাইরেক্ট ভিডিও)
+                if (data.type === 'series' && data.episodes && data.episodes.length > 0) {
+                    setCurrentVideo(data.episodes[0].videoUrl); 
                     setActiveEpIndex(0);
                 } else {
                     setCurrentVideo(data.videoUrl);
                 }
                 
-               
                 setNewFeatured(data.isFeatured);
 
-                
+                // ২. রিলেটেড মুভি লোড করা
                 const allRes = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 const suggestions = allRes.data.filter(m => 
                     m.genre === data.genre && m._id !== data._id
@@ -51,17 +49,13 @@ const MoviePlayer = () => {
         window.scrollTo(0, 0);
     }, [id]);
 
-
     const changeEpisode = (ep, index) => {
         setCurrentVideo(ep.videoUrl);
         setActiveEpIndex(index);
     };
 
-
-
     const handleUpdate = async () => {
         try {
-            
             await axios.put(`https://beyond-movie-site-project-mern-stack.onrender.com/api/movies/feature/${id}`, {
                 isFeatured: newFeatured
             });
@@ -71,7 +65,6 @@ const MoviePlayer = () => {
             alert('Update Failed');
         }
     };
-
 
     const submitReview = async (e) => {
         e.preventDefault();
@@ -88,26 +81,30 @@ const MoviePlayer = () => {
         }
     };
 
-    if (!movie) return <div style={{color:'white', padding:'50px'}}>Loading...</div>;
+    if (!movie) return <div style={{color:'white', padding:'50px', textAlign:'center'}}>Loading Player...</div>;
 
     return (
         <div className="player-page-container">
             
             <div className="main-content">
 
-                <div className="video-wrapper">
-                    <video 
-                        key={currentVideo} 
-                        controls 
-                        className="main-video"
-                        src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${currentVideo}`}
-                        poster={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`}
-                    >
-                        Your browser does not support the video tag.
-                    </video>
+                {/* 👇 VIDEO PLAYER SECTION (CHANGED) */}
+                <div className="video-wrapper" style={{ position: 'relative', paddingTop: '56.25%', background: '#000' }}>
+                    <ReactPlayer 
+                        url={currentVideo} 
+                        className="react-player"
+                        width="100%"
+                        height="100%"
+                        controls={true}
+                        playing={true}
+                        style={{ position: 'absolute', top: 0, left: 0 }}
+                        config={{
+                            file: { attributes: { controlsList: 'nodownload' } } // ডাউনলোড অপশন লুকানোর চেষ্টা
+                        }}
+                    />
                 </div>
 
-             
+                {/* 👇 EPISODE LIST (SERIES ONLY) */}
                 {movie.type === 'series' && (
                     <div className="episode-list-container">
                         <h3>📺 Episodes: Season 1</h3>
@@ -125,7 +122,7 @@ const MoviePlayer = () => {
                     </div>
                 )}
 
-   
+                {/* TITLE & INFO */}
                 <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'20px'}}>
                     <h1 className="player-title" style={{margin:0}}>{movie.title}</h1>
                     {movie.type === 'series' && <span className="badge badge-hd">WEB SERIES</span>}
@@ -156,7 +153,7 @@ const MoviePlayer = () => {
                     </div>
                 </div>
 
-           
+                {/* --- COMMENTS SECTION --- */}
                 <div className="comments-section" style={{marginTop:'40px'}}>
                     <h3>📝 Reviews & Comments</h3>
                     
@@ -184,13 +181,19 @@ const MoviePlayer = () => {
                 </div>
             </div>
 
-     
+            {/* 👇 SIDEBAR (UPDATED LINKS & IMAGES) */}
             <div className="sidebar">
                 <h3>📺 More Like This</h3>
                 <div className="suggestion-list">
                     {relatedMovies.map(rel => (
-                        <Link to={`/movie/${rel._id}`} key={rel._id} className="suggestion-card">
-                            <img src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${rel.thumbnailUrl}`} alt="" />
+                        // Link পরিবর্তন করা হয়েছে: /movie/ থেকে /player/
+                        <Link to={`/player/${rel._id}`} key={rel._id} className="suggestion-card">
+                            {/* Image Source ফিক্স করা হয়েছে (Direct Link) */}
+                            <img 
+                                src={rel.thumbnailUrl} 
+                                alt={rel.title} 
+                                onError={(e) => {e.target.src = "https://via.placeholder.com/150"}}
+                            />
                             <div className="sug-info">
                                 <h4>{rel.title}</h4>
                                 <span>{new Date(rel.releaseDate).getFullYear()}</span>
