@@ -1,62 +1,63 @@
 // src/components/FeaturedSlider.jsx
-import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { EffectCoverflow, Pagination, Autoplay } from 'swiper/modules';
-
-
-import 'swiper/css';
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/pagination';
-
-import '../App.css'; 
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import '../App.css'; // বা আপনার স্লাইডার CSS
 
 const FeaturedSlider = ({ movies }) => {
-  
-  const featuredMovies = movies.filter(movie => movie.isFeatured);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
-  if (featuredMovies.length === 0) return null;
+    // শুধু Featured মুভিগুলো ফিল্টার করা
+    const featuredMovies = movies.filter(movie => movie.isFeatured === true);
 
-  return (
-    <div style={{ padding: '40px 0' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#e50914' }}>🔥 Trending Now</h2>
-      
-      <Swiper
-        effect={'coverflow'}
-        grabCursor={true}
-        centeredSlides={true}
-        slidesPerView={'auto'}
-        coverflowEffect={{
-          rotate: 50,       
-          stretch: 0,
-          depth: 100,       
-          modifier: 1,
-          slideShadows: true,
-        }}
-        autoplay={{
-          delay: 2500,      
-          disableOnInteraction: false,
-        }}
-        pagination={true}
-        modules={[EffectCoverflow, Pagination, Autoplay]}
-        className="mySwiper"
-      >
-        {featuredMovies.map((movie) => (
-          <SwiperSlide key={movie._id} style={{ width: '300px', height: '400px' }}>
-            <div className="slider-card">
-              <img 
-                src={`https://beyond-movie-site-project-mern-stack.onrender.com/uploads/${movie.thumbnailUrl}`} 
-                alt={movie.title} 
-                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
-              />
-              <div className="slider-info">
-                <h3>{movie.title}</h3>
-              </div>
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prevIndex) => 
+                prevIndex === featuredMovies.length - 1 ? 0 : prevIndex + 1
+            );
+        }, 5000); // ৫ সেকেন্ড পর পর স্লাইড চেঞ্জ হবে
+        return () => clearInterval(interval);
+    }, [featuredMovies.length]);
+
+    if (featuredMovies.length === 0) return null;
+
+    return (
+        <div className="featured-slider">
+            {featuredMovies.map((movie, index) => (
+                <div 
+                    key={movie._id} 
+                    className={`slider-item ${index === currentIndex ? 'active' : ''}`}
+                    style={{ 
+                        backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.9)), url(${movie.thumbnailUrl})` 
+                    }}
+                >
+                    <div className="slider-content">
+                        <span className="featured-badge">🔥 Trending Now</span>
+                        <h1>{movie.title}</h1>
+                        <p className="slider-meta">
+                            {new Date(movie.releaseDate).getFullYear()} • {movie.genre}
+                        </p>
+                        <p className="slider-desc">{movie.description?.substring(0, 100)}...</p>
+                        
+                        {/* 👇 এখানে লিঙ্ক ঠিক করা হয়েছে (/movie/ ব্যবহার করা হয়েছে) */}
+                        <Link to={`/movie/${movie._id}`} className="watch-btn">
+                            ▶ Watch Now
+                        </Link>
+                    </div>
+                </div>
+            ))}
+            
+            {/* Dots Indicator */}
+            <div className="slider-dots">
+                {featuredMovies.map((_, idx) => (
+                    <span 
+                        key={idx} 
+                        className={`dot ${idx === currentIndex ? 'active' : ''}`}
+                        onClick={() => setCurrentIndex(idx)}
+                    ></span>
+                ))}
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default FeaturedSlider;

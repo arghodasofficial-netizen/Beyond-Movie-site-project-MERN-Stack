@@ -12,7 +12,6 @@ const Home = () => {
     useEffect(() => {
         const fetchMovies = async () => {
             try {
-                // আপনার সার্ভার থেকে মুভি লিস্ট আনছি
                 const res = await axios.get('https://beyond-movie-site-project-mern-stack.onrender.com/api/movies');
                 setMovies(res.data);
             } catch (error) {
@@ -22,25 +21,18 @@ const Home = () => {
         fetchMovies();
     }, []);
 
-    
     const getFilteredMovies = () => {
         let filtered = movies;
-        
-        // শুধু মুভিগুলো ফিল্টার করা হচ্ছে (সিরিজ বাদে)
-        // অথবা আপনি চাইলে সব রাখতে পারেন, তবে সাধারণত 'Latest Updates' এ মিক্স থাকে
         if (activeTab !== 'All') {
             filtered = movies.filter(m => 
                 m.genre && m.genre.toLowerCase().trim() === activeTab.toLowerCase().trim()
             );
         }
-        
         return filtered.slice(0, 12);
     };
 
-    
     const webSeries = movies.filter(m => m.type === 'series').slice(0, 6);
 
-    
     const getRating = (movie) => {
         if (!movie.reviews || movie.reviews.length === 0) return "N/A";
         const avg = movie.reviews.reduce((acc, item) => item.rating + acc, 0) / movie.reviews.length;
@@ -49,7 +41,8 @@ const Home = () => {
 
     return (
         <div style={{ paddingBottom: '50px' }}>
-         
+            
+            {/* স্লাইডার কম্পোনেন্ট */}
             <FeaturedSlider movies={movies} /> 
 
             <div style={{ padding: '0 40px', marginTop: '40px' }}>
@@ -60,7 +53,6 @@ const Home = () => {
                         Latest Updates
                     </h2>
                     
-                    {/* Filter Tabs */}
                     <div className="filter-tabs">
                         {['All', 'Thriller', 'Horror', 'Comedy', 'Action'].map(cat => (
                             <button 
@@ -81,15 +73,15 @@ const Home = () => {
                 {/* --- MOVIE GRID --- */}
                 <div className="movie-grid">
                     {getFilteredMovies().map((item) => (
-                        // 👇 Link পরিবর্তন করে /player/ করা হয়েছে যাতে প্লেয়ার ওপেন হয়
-                        <Link to={`/player/${item._id}`} key={item._id} className="movie-card">
+                        // 👇 ফিক্স ১: /player/ এর বদলে /movie/ দেওয়া হয়েছে (রাউটিং ঠিক করার জন্য)
+                        <Link to={`/movie/${item._id}`} key={item._id} className="movie-card">
                             
-                            {/* 👇 পরিবর্তন: এখানে সার্ভার লিঙ্ক বাদ দেওয়া হয়েছে, সরাসরি item.thumbnailUrl */}
+                            {/* 👇 ফিক্স ২: ছবির সোর্স থেকে uploads পাথ সরানো হয়েছে (ডাইরেক্ট লিঙ্ক) */}
                             <img 
                                 src={item.thumbnailUrl} 
                                 alt={item.title} 
                                 className="poster-img"
-                                onError={(e) => {e.target.src = "https://via.placeholder.com/300x450?text=No+Image"}} // ছবি না থাকলে ব্যাকআপ
+                                onError={(e) => {e.target.src = "https://via.placeholder.com/300x450?text=No+Image"}}
                             />
                             
                             <div className="card-badges">
@@ -97,7 +89,6 @@ const Home = () => {
                                     <span className="badge badge-hd">{item.type === 'series' ? 'WEB' : 'HD'}</span>
                                     <span className="badge badge-year">{new Date(item.releaseDate).getFullYear()}</span>
                                 </div>
-                                
                                 <span className="badge badge-imdb">
                                     ⭐ {getRating(item)}
                                 </span>
@@ -131,8 +122,9 @@ const Home = () => {
                         
                         <div className="movie-grid">
                             {webSeries.map((item) => (
-                                <Link to={`/player/${item._id}`} key={item._id} className="movie-card">
-                                    {/* 👇 পরিবর্তন: এখানেও ডাইরেক্ট লিঙ্ক */}
+                                // 👇 ফিক্স: এখানেও /movie/ দেওয়া হয়েছে
+                                <Link to={`/movie/${item._id}`} key={item._id} className="movie-card">
+                                    {/* 👇 ফিক্স: ছবির লিঙ্ক ঠিক করা হয়েছে */}
                                     <img 
                                         src={item.thumbnailUrl} 
                                         alt={item.title} 
